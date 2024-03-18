@@ -1,17 +1,37 @@
-import { useState } from "react"
+import axios from "axios"
+import { useCallback, useState } from "react"
 
-export default function SectionAddBook({
+export default SectionAddBook({
     stateSection,
-    setStateSection
+    setStateSection,
+    callbackToParent
 }){
     const[title, setTitle] = useState('Hello')
     const [author, setAuthor] = useState('World')
 
-    const handleSubmitForm = () => {
-        console.log('title', title)
-        console.log('author', author)
-    }
+    const handleSubmitForm = useCallback(async() => {
+        
+        if(title ==='' && author ===''){
+            alert('some value should not be empty')
+            return
+        }
+
+        try {
+            const res = await axios.post('http://localhost:3000/books')
+            if(res.status === 200){
+                alert('Add book successfuly')
+                handleCloseForm()
+                callbackToParent()
+                return
+            }
+            throw new Error(res)
+        } catch(err){
+            console.log(err)
+        }
+    }, [axios,handleCloseForm])
     const handleCloseForm = () => {
+        setTitle('')
+        setAuthor('')
         setStateSection(false)
     }
     if(!stateSection) return(<></>)
@@ -32,7 +52,7 @@ export default function SectionAddBook({
                 setAuthor(e.target.value)}/>
             <br/><br/>
             <button type="button" onClick={handleSubmitForm}>Submit</button>
-            <button>Cancel</button>
+            <button type="button" onClick={handleCloseForm}>Cancel</button>
            </form>
         </>
     )
